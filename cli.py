@@ -45,8 +45,6 @@ def compile_(sanitizer: bool) -> bool:
             console.print(f"[red]Failed to compile [bold]{cp_file}[/][/]")
             return False
 
-    console.print(f"Compiled [bold]{cp_file}[/]")
-
     return True
 
 @app.command()
@@ -55,7 +53,12 @@ def bkup(name: typing.Annotated[str, typer.Argument(help="File name")] = "_") ->
     Backup `cp_file`.
     """
 
-    shutil.copy(cp_file, bkup_dir / (name + ".cpp"))
+    bkup_file = bkup_dir / (name + ".cpp")
+
+    shutil.copy(cp_file, bkup_file)
+
+    console.print()
+    console.print(f"[bold]{cp_file}[/] -> [bold]{bkup_file}[/]")
 
 @app.command()
 def cc() -> None:
@@ -129,7 +132,8 @@ def cmpl(sanitizer: typing.Annotated[bool, typer.Option(help="Use sanitizers")] 
     Compile `cp_file`.
     """
 
-    compile_(sanitizer)
+    if compile_(sanitizer):
+        console.print(f"Compiled [bold]{cp_file}[/]")
 
 @app.command()
 def cp() -> None:
@@ -138,6 +142,9 @@ def cp() -> None:
     """
 
     pyperclip.copy(cp_file.read_text())
+
+    console.print()
+    console.print(f"[bold]{cp_file}[/] -> clipboard")
 
 @app.command()
 def qoj(prob: typing.Annotated[int, typer.Argument(help="Problem id")]) -> None:
@@ -169,7 +176,12 @@ def rstr(name: typing.Annotated[str, typer.Argument(help="File name")] = "_") ->
     Restore `cp_file`.
     """
 
-    shutil.copy(bkup_dir / (name + ".cpp"), cp_file)
+    bkup_file = bkup_dir / (name + ".cpp")
+
+    shutil.copy(bkup_file, cp_file)
+
+    console.print()
+    console.print(f"[bold]{bkup_file}[/] -> [bold]{cp_file}[/]")
 
 @app.command()
 def test(custom: typing.Annotated[bool, typer.Option(help="Use custom input")] = False) -> None:
@@ -187,11 +199,15 @@ def test(custom: typing.Annotated[bool, typer.Option(help="Use custom input")] =
     else:
         files = [cp_dir / "custom.in"]
 
-    for x in sorted(files):
-        console.print()
-        console.print(f"[bold]{x.name}[/]")
+    files = sorted(files)
+
+    for x in files:
+        if len(files) > 1:
+            console.print(f"[bold]{x.name}[/]")
         if subprocess.run([str(cp_dir / "a.out")], input=x.read_text(), text=True).returncode:
             break
+        if x != files[-1]:
+            console.print()
 
 @app.command()
 def tmpl(name: typing.Annotated[str, typer.Argument(help="Name of template")] = "single") -> None:
@@ -212,7 +228,12 @@ def tmpl(name: typing.Annotated[str, typer.Argument(help="Name of template")] = 
     for x in view_dir.glob(view_glob):
         x.unlink()
 
-    shutil.copy(tmpl_dir / f"{name}.cpp", cp_file)
+    tmpl_file = tmpl_dir / f"{name}.cpp"
+
+    shutil.copy(tmpl_file, cp_file)
+
+    console.print()
+    console.print(f"[bold]{tmpl_file}[/] -> [bold]{cp_file}[/]")
 
 @app.command()
 def view() -> None:
@@ -220,9 +241,12 @@ def view() -> None:
     View sample outputs.
     """
 
-    for x in sorted(cp_smpls.glob("*.ans")):
+    files = sorted(cp_smpls.glob("*.ans"))
+
+    for x in files:
         console.print()
-        console.print(f"[bold]{x.name}[/]")
+        if len(files) > 1:
+            console.print(f"[bold]{x.name}[/]")
         console.print(x.read_text(), end="")
 
 if __name__ == "__main__":
