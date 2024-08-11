@@ -25,7 +25,7 @@ bkup_dir = pathlib.Path.home() / ".backup"
 cp_file = cp_dir / "main.cpp"
 cp_smpls = cp_dir / "samples"
 
-def compile_(sanitizer: bool) -> bool:
+def compile_(file: pathlib.Path, sanitizer: bool = True) -> bool:
 
     console.print()
 
@@ -38,7 +38,7 @@ def compile_(sanitizer: bool) -> bool:
         args.append("-fsanitize=address,undefined")
 
     with console.status(f"Compiling [bold]{cp_file}[/]") as status:
-        process = subprocess.run([str(shutil.which("clang++"))] + args + [str(cp_file)])
+        process = subprocess.run([str(shutil.which("clang++"))] + args + [str(file)])
         if process.returncode:
             status.stop()
             console.print()
@@ -127,13 +127,18 @@ def cc() -> None:
         (cp_smpls / f"ex_{i + 1}.ans").write_text(data["tests"][i]["output"])
 
 @app.command()
-def cmpl(sanitizer: typing.Annotated[bool, typer.Option(help="Use sanitizers")] = True) -> None:
+def cmpl(
+    file: typing.Annotated[str, typer.Argument(help="File to compile")] = "",
+    sanitizer: typing.Annotated[bool, typer.Option(help="Use sanitizers")] = True
+) -> None:
     """
-    Compile `cp_file`.
+    Compile a file.
     """
 
-    if compile_(sanitizer):
-        console.print(f"Compiled [bold]{cp_file}[/]")
+    cmpl_file = cp_file if file == "" else pathlib.Path.cwd() / file
+
+    if compile_(cmpl_file, sanitizer):
+        console.print(f"Compiled [bold]{cmpl_file}[/]")
 
 @app.command()
 def cp() -> None:
@@ -189,7 +194,7 @@ def test(custom: typing.Annotated[bool, typer.Option(help="Use custom input")] =
     Run cases.
     """
 
-    if not compile_(True):
+    if not compile_(cp_file):
         return
 
     files = []
