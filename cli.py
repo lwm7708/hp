@@ -37,12 +37,12 @@ def compile_(file: pathlib.Path, sanitizer: bool = True) -> bool:
     if sanitizer:
         args.append("-fsanitize=address,undefined")
 
-    with console.status(f"Compiling [bold]{cp_file}[/]") as status:
+    with console.status(f"Compiling [bold]{file}[/]") as status:
         process = subprocess.run([str(shutil.which("clang++"))] + args + [str(file)])
         if process.returncode:
             status.stop()
             console.print()
-            console.print(f"[red]Failed to compile [bold]{cp_file}[/][/]")
+            console.print(f"[red]Failed to compile [bold]{file}[/][/]")
             return False
 
     return True
