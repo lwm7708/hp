@@ -141,15 +141,17 @@ def cmpl(
         console.print(f"Compiled [bold]{cmpl_file}[/]")
 
 @app.command()
-def cp() -> None:
+def cp(file: typing.Annotated[str, typer.Argument(help="File to copy")] = "") -> None:
     """
-    Copy `cp_file`.
+    Copy a file.
     """
 
-    pyperclip.copy(cp_file.read_text())
+    copy_file = cp_file if file == "" else pathlib.Path.cwd() / file
+
+    pyperclip.copy(copy_file.read_text())
 
     console.print()
-    console.print(f"[bold]{cp_file}[/] -> clipboard")
+    console.print(f"[bold]{copy_file}[/] -> clipboard")
 
 @app.command()
 def qoj(prob: typing.Annotated[int, typer.Argument(help="Problem id")]) -> None:
