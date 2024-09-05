@@ -55,9 +55,16 @@ def bkup(name: typing.Annotated[str, typer.Argument(help="File name")] = "_") ->
 
     bkup_file = bkup_dir / (name + ".cpp")
 
+    console.print()
+
+    if bkup_file.exists() and name != "_":
+        replace = input(f"Replace {bkup_file}? (y/N) ")
+        if replace != "y":
+            return
+        console.print()
+
     shutil.copy(cp_file, bkup_file)
 
-    console.print()
     console.print(f"[bold]{cp_file}[/] -> [bold]{bkup_file}[/]")
 
 @app.command()
